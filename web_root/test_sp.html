@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!-- charset -->
+<meta charset="utf-8">
+
+<!-- title -->
+<title>ページのタイトル</title>
+<meta name="description" content="ページの説明">
+</head>
+<body>
+
+<div id="videmode">すまふぉ</div>
+
+<!-- js -->
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.cookie.js"></script>
+<script>
+/* -- jQuery -- */
+$(function() {
+	$("#videmode").click(
+		function() {
+			// 設定
+			$.cookie("viewmode", "pc", { 'expires':7, 'path':"/" });
+			// リロード
+			location.reload(true);
+		}
+	);
+});
+</script>
+</body>
+</html>

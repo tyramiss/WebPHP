@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!-- charset -->
+<meta charset="utf-8">
+
+<!-- title -->
+<title>ページのタイトル</title>
+<meta name="description" content="ページの説明">
+</head>
+<body>
+
+<div id="videmode">ぱそこん</div>
+
+<!-- js -->
+<script src="/js/jquery-1.8.3.min.js"></script>
+<script src="/js/jquery.cookie.js"></script>
+<script>
+/* -- jQuery -- */
+$(function() {
+	// viewモードがPCの場合のみ
+	if ($.cookie("viewmode") === "pc") {
+		$("#videmode").click(
+			function() {
+				// 設定
+				$.removeCookie("viewmode", { 'path':"/" });
+				// リロード
+				location.reload(true);
+			}
+		);
+	}
+});
+</script>
+</body>
+</html>
