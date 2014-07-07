@@ -19,37 +19,31 @@ try {
 	$_ENV['ROOT'] = substr($_SERVER['REDIRECT_URL'], 0, strpos($_SERVER['REDIRECT_URL'], 'web_root/'));
 	$_ENV['PARAM'] = $_GET['path'];
 
-	// イテレータ
-	$i = 0;
-
 	// 渡されたパスの分解
 	$paths = preg_split('|/|', trim($_GET['path'], "/"));
 
-	// ルート設定値の初期化
-	$_ROUTE = array(
-		'theme'   => "",
-		'page'    => "page",
-		'layout'  => "default",
-		'control' => "",
-		'param'   => array()
-	);
+	// イテレータ
+	$i = 0;
+	$end = count($paths);
 
-	// コントローラーファイルの選定
-	while (isset($paths[$i])) {
+	// コントローラーファイルの検索
+	$control = "";
+	while ($i < $end) {
 		$path = $paths[$i++];
 		if (!$path) {
 			$path = "index";
 		}
-		$_ROUTE['control'] .= "/" . $path;
-		if (File::isRead(CONTROLL_DIR . $_ROUTE['control'] . PHP_EXTENSION)) {
+		$control .= $path;
+		if (File::isRead(CONTROLL_DIR . "/" . $control . PHP_EXTENSION)) {
 			break;
 		}
+		$control .= "/";
 	}
-	$_ROUTE['control'] = trim($_ROUTE['control'], "/");
 
 	// パラメーター部分の取得
+	$param = array();
 	while (isset($paths[$i])) {
-		$_ROUTE['param'][] = $paths[$i++];
+		$param[] = $paths[$i++];
 	}
 
 	// ユーザーのルート設定がある場合は従う
@@ -58,29 +52,27 @@ try {
 	}
 
 	// 404 Not Found
-	if (!File::isRead(CONTROLL_DIR . "/" . $_ROUTE['control'] . PHP_EXTENSION)) {
+	if (!File::isRead(CONTROLL_DIR . "/" . $control . PHP_EXTENSION)) {
 		throw new FileNotFoundException();
 	}
 
 	// コントローラーの読み込み
-	include CONTROLL_DIR . "/" . $_ROUTE['control'] . PHP_EXTENSION;
+	include CONTROLL_DIR . "/" . $control . PHP_EXTENSION;
 
+	// クラス作成
+	$frame = new controlFrame($control, $param);
 }
 // 404 Not Found
 catch(FileNotFoundException $err) {
-		$_ROUTE['page'] = "error";
-		$_ROUTE['layout'] = "error";
-		$_ROUTE['control'] = "404";
-
 		// ヘッダー
 		header("HTTP/1.1 404 Not Found");
 
 		// 404ファイルが存在
-		$filepath = VIEW_DIR . "/" . $_ROUTE['page'] . $_ROUTE['control'] . CTP_EXTENSION;
+		$filepath = VIEW_DIR . "/error/404" . CTP_EXTENSION;
 		if (File::isRead($filepath)) {
 			include $filepath;
 		}
 		else {
-			include CORE_DIR . "/view/error" . $_ROUTE['control'] . CTP_EXTENSION;
+			include CORE_DIR . "/view/error/404" . CTP_EXTENSION;
 		}
 }

@@ -11,7 +11,7 @@ RewriteRule ^.*$ web_root/$0
 # PHP Script
 RewriteCond %{REQUEST_URI} /web_root/
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^web_root((/[^/]+)*)/?$ web_root/index.php?path=$1
+RewriteRule ^web_root/(.*)$ web_root/index.php?path=$1
 
 # SmartPhone Device
 SetEnvIf User-Agent "iPhone" UA=sp
