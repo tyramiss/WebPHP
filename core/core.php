@@ -2,54 +2,48 @@
 // エラー関連
 include CORE_DIR . "/lib/error.php";
 
-// システム設定ファイルの読み込み
-include CORE_DIR . "/config.php";
+// ハッシュ
+include CORE_DIR . "/lib/hash.php";
+// 環境設定
+include CORE_DIR . "/lib/env.php";
 
+// ディレクトリ
+include CORE_DIR . "/lib/dir.php";
 // ファイル管理
 include CORE_DIR . "/lib/file.php";
 
-// ハッシュ
-include CORE_DIR . "/lib/hash.php";
+// システム設定ファイルの読み込み
+include CORE_DIR . "/config.php";
+
+// フレームワーク
+include CORE_DIR . "/lib/frame.php";
 
 try {
-	// 環境設定
-	$_ENV = $_SERVER;
-	$_ENV['SSL'] = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === "on";
-	$_ENV['PROTOCOL'] = $_ENV['SSL'] ? "https://" : "http://";
-	$_ENV['ROOT'] = substr($_SERVER['REDIRECT_URL'], 0, strpos($_SERVER['REDIRECT_URL'], 'web_root/'));
-	$_ENV['PARAM'] = $_GET['path'];
-
-	// イテレータ
-	$i = 0;
-
 	// 渡されたパスの分解
 	$paths = preg_split('|/|', trim($_GET['path'], "/"));
 
-	// ルート設定値の初期化
-	$_ROUTE = array(
-		'theme'   => "",
-		'page'    => "page",
-		'layout'  => "default",
-		'control' => "",
-		'param'   => array()
-	);
+	// イテレータ
+	$i = 0;
+	$end = count($paths);
 
-	// コントローラーファイルの選定
-	while (isset($paths[$i])) {
+	// コントローラーファイルの検索
+	$control = "";
+	while ($i < $end) {
 		$path = $paths[$i++];
 		if (!$path) {
 			$path = "index";
 		}
-		$_ROUTE['control'] .= "/" . $path;
-		if (File::isRead(CONTROLL_DIR . $_ROUTE['control'] . PHP_EXTENSION)) {
+		$control .= $path;
+		if (baseFrame::isControl($control)) {
 			break;
 		}
+		$control .= "/";
 	}
-	$_ROUTE['control'] = trim($_ROUTE['control'], "/");
 
 	// パラメーター部分の取得
+	$param = array();
 	while (isset($paths[$i])) {
-		$_ROUTE['param'][] = $paths[$i++];
+		$param[] = $paths[$i++];
 	}
 
 	// ユーザーのルート設定がある場合は従う
@@ -58,29 +52,29 @@ try {
 	}
 
 	// 404 Not Found
-	if (!File::isRead(CONTROLL_DIR . "/" . $_ROUTE['control'] . PHP_EXTENSION)) {
-		throw new FileNotFoundException();
+	if (!baseFrame::isControl($control)) {
+		throw new NotFoundException("コントローラーにファイルが存在しません。\nFile : " . baseFrame::getControlPath($control));
+	}
+
+	// ユーザー設定
+	if (!File::isRead(CONFIG_DIR . "/config" . PHP_EXTENSION)) {
+		include CONFIG_DIR . "/config" . PHP_EXTENSION;
 	}
 
 	// コントローラーの読み込み
-	include CONTROLL_DIR . "/" . $_ROUTE['control'] . PHP_EXTENSION;
+	include baseFrame::getControlPath($control);
 
+	// クラス作成
+	$frame = new controlFrame($control, $param);
 }
 // 404 Not Found
-catch(FileNotFoundException $err) {
-		$_ROUTE['page'] = "error";
-		$_ROUTE['layout'] = "error";
-		$_ROUTE['control'] = "404";
-
-		// ヘッダー
-		header("HTTP/1.1 404 Not Found");
-
+catch(NotFoundException $error) {
 		// 404ファイルが存在
-		$filepath = VIEW_DIR . "/" . $_ROUTE['page'] . $_ROUTE['control'] . CTP_EXTENSION;
+		$filepath = VIEW_DIR . "/error/404" . CTP_EXTENSION;
 		if (File::isRead($filepath)) {
 			include $filepath;
 		}
 		else {
-			include CORE_DIR . "/view/error" . $_ROUTE['control'] . CTP_EXTENSION;
+			include CORE_DIR . "/view/error/404" . CTP_EXTENSION;
 		}
 }

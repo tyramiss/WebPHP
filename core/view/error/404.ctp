@@ -1,4 +1,5 @@
 <?php
 header("Content-Type: text/plain; charset=UTF-8");
-?>
-アクセス先にはファイルが存在しませんでした。
+
+echo "アクセス先にはファイルが存在しませんでした。\n\n";
+echo $error->getMessage();
