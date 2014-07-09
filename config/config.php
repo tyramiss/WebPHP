@@ -6,9 +6,9 @@
 $_CONFIG['db'] = array(
 	'type'     => "mysql",
 	'host'     => "localhost",
-	'user'     => "vagrant",
-	'password' => "",
-	'database' => "",
+	'user'     => "dev",
+	'password' => "dev",
+	'database' => "t_marche",
 	'port'     => "",
 	'socket'   => "",
 	'charset'  => "utf8"

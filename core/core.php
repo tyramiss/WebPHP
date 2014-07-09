@@ -17,6 +17,7 @@ include CORE_DIR . "/config.php";
 
 // フレームワーク
 include CORE_DIR . "/lib/frame.php";
+include CORE_DIR . "/lib/view.php";
 
 try {
 	// 渡されたパスの分解
@@ -70,7 +71,7 @@ try {
 // 404 Not Found
 catch(NotFoundException $error) {
 		// 404ファイルが存在
-		$filepath = VIEW_DIR . "/error/404" . CTP_EXTENSION;
+		$filepath = VIEW_DIR . "/" . VIEW_ERROR_DIR . "/404" . CTP_EXTENSION;
 		if (File::isRead($filepath)) {
 			include $filepath;
 		}

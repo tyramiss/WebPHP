@@ -1,4 +1,7 @@
 <?php
+/**
+ * フレームワーク
+ */
 class baseFrame {
 	/* -- グローバル変数 -- */
 	public $theme;
@@ -8,6 +11,7 @@ class baseFrame {
 	public $action;
 	public $view;
 	public $param;
+	public $viewVariable;
 
 	/**
 	 * コンストラクタ
@@ -15,7 +19,7 @@ class baseFrame {
 	public function __construct($control, $param) {
 		// デフォルトの設定
 		$this->theme = "";
-		$this->page = "";
+		$this->page = "page";
 		$this->layout = "default";
 
 		// コントローラー
@@ -49,6 +53,9 @@ class baseFrame {
 			}
 		}
 
+		// グローバル変数
+		$this->viewVariable = array();
+
 		// 開始
 		$this->AppStart();
 
@@ -58,7 +65,16 @@ class baseFrame {
 		}
 
 		// 表示
-		$this->AppView();
+		$view = new baseView(
+			$this->theme,
+			$this->page,
+			$this->layout,
+			$this->control,
+			$this->action,
+			$this->view,
+			$this->param,
+			$this->viewVariable
+		);
 	}
 
 	/**
@@ -68,49 +84,44 @@ class baseFrame {
 	}
 
 	/**
-	 * 表示
-	 */
-	public function AppView() {
-		// 404 : レイアウトファイルが存在しない
-		if (!File::isRead($this->getLayoutPath())) {
-			throw new NotFoundException($this->_errorOutPut("レイアウトファイルが存在しません。"));
-		}
-		// 404 : 表示するファイルが存在しない
-		if (!File::isRead($this->getViewPath())) {
-			throw new NotFoundException($this->_errorOutPut("表示ファイルが存在しません。"));
-		}
-
-		// テンプレートの読み込み
-		ob_start();
-		include $this->getViewPath();
-		$content = ob_get_clean();
-
-		// レイアウトに興して表示
-		include $this->getLayoutPath();
-	}
-
-	/**
-	 * レイアウトファイルのパスを返す
+	 * viewへ変数を渡す。
 	 *
-	 * @return string レイアウトファイルのパス。
+	 * @param array $params 渡す連想配列。
 	 */
-	public function getLayoutPath($extension = CTP_EXTENSION) {
-		return(VIEW_DIR . (isset($this->theme{0}) ? "/{$this->theme}/" : "/") . "layout/{$this->layout}{$extension}");
+	public function set($params) {
+		$this->viewVariable = array_merge($this->viewVariable, $parames);
 	}
 
 	/**
-	 * 表示ファイルのパスを返す
+	 * viewへ渡した変数を削除する。
+	 *
+	 * @param array $params 渡す連想配列。
+	 */
+	public function delete($column) {
+		if (is_array($cloumn)) {
+			foreach ($cloumn as $key) {
+				$this->delete($key);
+			}
+			return;
+		}
+		if (isset($this->viewVariable[$column])) {
+			unset($this->viewVariable[$column]);
+		}
+	}
+
+	/**
+	 * 表示ファイルのパスを返す。
 	 *
 	 * @return string 表示ファイルのパス。
 	 */
 	public function getViewPath($extension = CTP_EXTENSION) {
-		return(VIEW_DIR . (isset($this->theme{0}) ? "/{$this->theme}/" : "/") . "{$this->control}/{$this->view}{$extension}");
+		return(VIEW_DIR . "/{$this->page}/" . (isset($this->theme{0}) ? $this->theme : "") . $this->control . $extension);
 	}
 
 	/**
-	 * コントローラーファイルが読み込めるか
+	 * コントローラーファイルが読み込めるか。
 	 *
-	 * @param string $name コントローラーの名前
+	 * @param string $name コントローラーの名前。
 	 * @return boolean コントローラーファイルが読み込めばTRUEを返す。
 	 */
 	public static function isControl($name) {
@@ -118,9 +129,9 @@ class baseFrame {
 	}
 
 	/**
-	 * コントローラーファイルのパスを返す
+	 * コントローラーファイルのパスを返す。
 	 *
-	 * @param string $name コントローラーの名前
+	 * @param string $name コントローラーの名前。
 	 * @return string コントローラーファイルのパス。
 	 */
 	public static function getControlPath($name) {
@@ -128,10 +139,10 @@ class baseFrame {
 	}
 
 	/**
-	 * エラーの出力
+	 * エラーの出力。
 	 *
-	 * @param string $message エラー内容
-	 * @return string エラー出力内容
+	 * @param string $message エラー内容。
+	 * @return string エラー出力内容。
 	 */
 	private function _errorOutPut($message) {
 		$params = join("/", $this->param);
