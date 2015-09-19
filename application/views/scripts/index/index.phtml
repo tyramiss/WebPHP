@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>はじめてのZendFramework</title>
+	<link rel="stylesheet" href="">
+</head>
+<body>
+	はじめてのZendFramework<br>
+	<?= $this->formSelect("sel", 2, null, array(1 => "a", 2 => "b")) ?><br>
+	<?= $this->formMultiCheckbox("chk", 2, null, array(1 => "a", 2 => "b"), "&nbsp;") ?><br>
+	<?= $this->formErrors(array("a", "b")) ?><br>
+</body>
+</html>
