@@ -6,9 +6,16 @@
 	<link rel="stylesheet" href="">
 </head>
 <body>
-	はじめてのZendFramework<br>
-	<?= $this->formSelect("sel", 2, null, array(1 => "a", 2 => "b")) ?><br>
-	<?= $this->formMultiCheckbox("chk", 2, null, array(1 => "a", 2 => "b"), "&nbsp;") ?><br>
-	<?= $this->formErrors(array("a", "b")) ?><br>
+はじめてのZendFramework<br>
+<?= $this->formSelect("sel", 2, null, array(1 => "a", 2 => "b")) ?><br>
+<?= $this->formMultiCheckbox("chk", 2, null, array(1 => "a", 2 => "b"), "&nbsp;") ?><br>
+<?= $this->formErrors(array("a", "b")) ?><br>
+Count = <?= $this->count?><br>
+DataBase :<br>
+<?= h_sys(print_r($this->user->toArray(), true)) ?><br>
+<br>
+Check :<br>
+<?= h_sys($this->input) ?><br>
+<?= h_sys($this->error) ?>
 </body>
 </html>

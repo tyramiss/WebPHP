@@ -1,5 +1,8 @@
 <?php
 // include
+require_once APP_COMMON . 'Controller.php';	// コントローラー基本クラス
+
+// DAO
 require_once APP_MODEL . 'TempleteDao.php';		/* 連携するテーブルのDAOを書きます */
 
 /**
@@ -12,7 +15,7 @@ require_once APP_MODEL . 'TempleteDao.php';		/* 連携するテーブルのDAO�
  * @author Navi
  * @version 1.0.0
  */
-class IndexController extends Zend_Controller_Action
+class templeteController extends Base_Controller_Action
 {
 	/** 定数 */
 	const CONST_TAMPLETE = "TEMPLETE";		/* 定数は全て大文字を使用してください */
@@ -76,53 +79,83 @@ class IndexController extends Zend_Controller_Action
 		}
 		catch (Zend_Exception $e) {
 			// エラーの処理
+
+			// 表示するページを切り替える
+			$this->_forward("error", "index");	/* errorコントロラーのindexアクションを呼ぶ例 */
 		}
+
+		/*
+		 * Action のおおまかな作り方は、
+		 *   最初に設定となるデータ類を読み込んで
+		 *   真ん中あたりで処理をして
+		 *   最後に View へ渡す処理
+		 * と言う形に合わせた方がメンテナンスが楽になるかな？
+		 */
 	}
 
 	/**
-	 * アクションの名前
+	 * 入力画面
 	 */
 	public function inputAction() {
 		try {
 			// リクエスト処理
 
 			// POSTから入力データを取得
-			$input = array(
-				'id'       => $this->_request->getPost("id",       "templete"),
-				'password' => $this->_request->getPost("password", "templete")
-			);
+			$input = Util::getPost($this->_request, array(
+				'id'       => "templete",
+				'password' => "templete",
+				'date'     => Zend_Date::now()->toString("yyyy/MM/dd"),
+				'time'     => Zend_Date::now()->toString("HH:mm:ss")
+			));
+			/* キー名が <form> で渡された name 名、値が 初期値 */
 
 
 			// DAOからの読み込み
 
 			// Templeteから読み込み
-			$templete_dao = new TempleteDao();	/* DAOクラスの変数名はクラス名を全て小文字にしスネークケースにしてください */
-			$templete_data = $templete_dao->findRow(array('id=?' => $id, 'password=' => $password));
+			$templete_dao = new TempleteDao();
+			$templete_data = $templete_dao->findRow(array('id=?' => "id", 'password=?' => "password"));
 
 
 			// 入力チェック
 
-			// エラー変数の初期化
-			$error = array();
-			foreach (array_keys($input) as $key) {
-				// 初期化
-				$error[$key] = null;
-			}
+			// 入力チェックエラー変数の初期化
+			$error = Util::cloneArrayKey($input);
+			/* $input の配列構造で全ての値が null にされた配列を作成 */
 
-			// ID
-			if (empty($input['id'])) {
-				$error['id'] = "IDが入力されていません";
-			}
-			else if ($input['id'] != $templete_data['id']) {
-				$error['id'] = "IDが正しくありません";
-			}
+			// 入力状態を確認
+			if (Util::getInputStatus($this->_request)) {
+				// ID
+				$error['id'] = Util::check($input['id'], array(
+					// 空のチェック
+					array("empty", "IDが入力されていません"),
+					// データベースと比較
+					array("equal", "IDが正しくありません", $templete_data['id'])
+				));
 
-			// Password
-			if (empty($input['password'])) {
-				$error['password'] = "パスワードが入力されていません";
-			}
-			else if ($input['password'] != $templete_data['password']) {
-				$error['password'] = "パスワードが正しくありません";
+				// Password
+				$error['password'] = Util::check($input['password'], array(
+					// 空のチェック
+					array("empty", "パスワードが入力されていません"),
+					// データベースと比較
+					array("equal", "パスワードが正しくありません", $templete_data['password'])
+				));
+
+				// 日付
+				$error['date'] = Util::check($input['date'], array(
+					// 空のチェック
+					array("empty", "日付が入力されていません"),
+					// 日付の妥当性
+					array("date", "日付が正しくありません", "yyyy/MM/dd")
+				));
+
+				// 時間
+				$error['date'] = Util::check($input['date'], array(
+					// 空のチェック
+					array("empty", "日付が入力されていません"),
+					// 時間の妥当性
+					array("date", "時間が正しくありません", "HH:mm:ss")
+				));
 			}
 
 

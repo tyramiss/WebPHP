@@ -1,0 +1,56 @@
+メモ
+
+// -- Util::getPostの動き
+// POSTから入力データを取得
+$input = Util::getPost($this->_request, array(
+	'id'       => "templete",
+	'password' => "templete",
+	'date'     => Zend_Date::now()->toString("yyyy/MM/dd"),
+	'time'     => Zend_Date::now()->toString("HH:mm:ss")
+));
+// ↑のは↓と同じ処理内容
+$input = array(
+	'id'       => $this->_request->getPost("id"      , "templete"),
+	'password' => $this->_request->getPost("password", "templete"),
+	'date'     => $this->_request->getPost("date"    , Zend_Date::now()->toString("yyyy/MM/dd")),
+	'time'     => $this->_request->getPost("time"    , Zend_Date::now()->toString("HH:mm:ss"))
+);
+
+
+// -- Util::CloneArrayKeyの動き
+$input = array(
+	'a' => "test",
+	'b' => 123,
+	'c' => null
+);
+$error = Util::CloneArrayKey($input);
+$error => array(
+	'a' => null,
+	'b' => null,
+	'c' => null
+)
+
+
+// -- Util::Checkと通常のプログラムの比較
+// ID
+$error['id'] = Util::Check($input['id'], array(
+	// 空のチェック
+	array("empty", "IDが入力されていません"),
+	// データベースと比較
+	array("equal", "IDが正しくありません", $templete_data['id'])
+));
+// ↑のは↓と同じ処理内容
+// 空のチェック
+if (empty($input['id'])) {
+	$error['id'] = "IDが入力されていません";
+}
+// データベースと比較
+else if ($input['id'] != $templete_data['id']) {
+	$error['id'] = "IDが正しくありません";
+}
+
+
+// -- render,forward,redirectの違い
+http://php.o0o0.jp/article/3394729557929687
+
+
