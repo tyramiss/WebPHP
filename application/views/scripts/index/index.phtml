@@ -2,20 +2,69 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>はじめてのZendFramework</title>
-	<link rel="stylesheet" href="">
+	<title>ログイン</title>
+	<link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-はじめてのZendFramework<br>
-<?= $this->formSelect("sel", 2, null, array(1 => "a", 2 => "b")) ?><br>
-<?= $this->formMultiCheckbox("chk", 2, null, array(1 => "a", 2 => "b"), "&nbsp;") ?><br>
-<?= $this->formErrors(array("a", "b")) ?><br>
-Count = <?= $this->count?><br>
-DataBase :<br>
-<?= h_sys(print_r($this->user->toArray(), true)) ?><br>
-<br>
-Check :<br>
-<?= h_sys($this->input) ?><br>
-<?= h_sys($this->error) ?>
+<form method="post" name="main"><?/* name属性は任意 */?>
+<input type="hidden" name="<?=FORM_KEY?>" value="<?=FORM_INPUT?>"><?/* 必須項目 */?>
+<div id="out">
+
+	<div id="head">
+		<h1>ログイン</h1>
+		<h2>あなたもログインはじめてみませんか？</h2>
+	</div>
+
+	<div id="main">
+		<!--div id="menu">
+			<a href="/index.html">メニュー１</a> |
+			<a href="/index.html">メニュー２</a> |
+			<a href="/index.html">メニュー３</a> |
+			<a href="/index.html">メニュー４</a>
+		</div-->
+
+		<?php /* PHPタグもインデントに含むみましょう */ ?>
+		<?php if ($this->error) : /* View内では {} を使用せず : 〜 else: : endif; を使用を推薦 */ ?>
+			<h3 class="errors">ログインに失敗しました</h3>
+			<?=$this->formErrors($this->error)?>
+		<?php endif; ?>
+
+		<h3>ログインに挑戦してください</h3>
+		<p>ユーザーID :</p>
+		<p class="mgl-2em <?=cs_err($this->error, "user_id", "auth")?>">
+			<?=$this->formText("user_id", $this->input['user_id'], array('size' => 30))?>
+		</p>
+		<p>パスワード :</p>
+		<p class="mgl-2em <?=cs_err($this->error, "password", "auth")?>">
+			<?=$this->formPassword("password", $this->input['password'], array('size' => 30))?>
+		</p>
+		<p><input type="submit" value="ログイン" class="btn"></p>
+
+		<h4>ご利用規約</h4>
+		<ul>
+			<li>ざんねんながら、これはテストサイトです。</li>
+		</ul>
+	</div>
+
+	<div id="footer">
+		Copyright &copy; <a href="/">はじめてのZendFramework</a> All Rights Reserved.
+	</div>
+</div>
+</form>
+
+<!--
+	<h1>ログイン</h1>
+	はじめてのZendFramework<br>
+	<?= $this->formSelect("sel", 2, null, array(1 => "a", 2 => "b")) ?><br>
+	<?= $this->formMultiCheckbox("chk", 2, null, array(1 => "a", 2 => "b"), "&nbsp;") ?><br>
+	<?= $this->formErrors(array("a", "b")) ?><br>
+	Count = <?= $this->count?><br>
+	DataBase :<br>
+	<?= h_sys(print_r($this->user->toArray(), true)) ?><br>
+	<br>
+	Check :<br>
+	<?= h_sys($this->input) ?><br>
+	<?= h_sys($this->error) ?>
+-->
 </body>
 </html>

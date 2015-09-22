@@ -53,6 +53,6 @@ class Util
 	 */
 	public static function getInputStatus($request) {
 		// <input type="hidden" name="{FORM_KEY}" value="{FORM_INPUT}"> を使用すること
-		return !($request->getPost(FORM_KEY , FORM_NONE) == FORM_INPUT);
+		return ($request->getPost(FORM_KEY , FORM_NONE) == FORM_INPUT);
 	}
 }

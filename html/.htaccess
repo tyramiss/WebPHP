@@ -1,3 +1,9 @@
+# Rewrite 
 RewriteEngine on
+
+# BaseDir
 RewriteBase /
+
+# Rule
+RewriteCond %{REQUEST_URI} !^/file/
 RewriteRule !\.(js|ico|gif|jpg|png|css)$ index.php

@@ -135,42 +135,49 @@ class templeteController extends Base_Controller_Action
 			// 入力チェック
 
 			// 入力チェックエラー変数の初期化
-			$error = Util::cloneArrayKey($input);
-			/* $input の配列構造で全ての値が null にされた配列を作成 */
+			$error = array();
 
 			// 入力状態を確認
 			if (Util::getInputStatus($this->_request)) {
-				// ID
-				$error['id'] = Check::validate($input['id'], array(
-					// 空のチェック
-					array("empty", self::ERR_ID_EMPTY),
-					// データベースと比較
-					array("equal", self::ERR_ID_EQUAL, $templete_data['id'])
+				// 入力チェック
+				$error = Check::validate($input, array(
+					// ID
+					'id' => array(
+						// 空のチェック
+						array("empty", self::ERR_ID_EMPTY),
+						// データベースと比較
+						array("equal", self::ERR_ID_EQUAL, $templete_data['id'])
+					),
+					// パスワード
+					'password' => array(
+						// 空のチェック
+						array("empty", self::ERR_PASSWORD_EMPTY),
+						// データベースと比較
+						array("equal", self::ERR_PASSWORD_EQUAL, $templete_data['password'])
+					),
+					// 日付
+					'date' => array(
+						// 空のチェック
+						array("empty", self::ERR_DATE_EMPTY),
+						// 日付の妥当性
+						array("date", self::ERR_DATE_VALIDATE, FORMAT_DATE)
+					),
+					// 時間
+					'time' => array(
+						// 空のチェック
+						array("empty", self::ERR_TIME_EMPTY),
+						// 時間の妥当性
+						array("date", self::ERR_TIME_VALIDATE, FORMAT_TIME)
+					),
 				));
 
-				// Password
-				$error['password'] = Check::validate($input['password'], array(
-					// 空のチェック
-					array("empty", self::ERR_PASSWORD_EMPTY),
-					// データベースと比較
-					array("equal", self::ERR_PASSWORD_EQUAL, $templete_data['password'])
-				));
+				/* 独自または複雑な入力チェックはここから下に記述 */
 
-				// 日付
-				$error['date'] = Check::validate($input['date'], array(
-					// 空のチェック
-					array("empty", self::ERR_DATE_EMPTY),
-					// 日付の妥当性
-					array("date", self::ERR_DATE_VALIDATE, FORMAT_DATE)
-				));
-
-				// 時間
-				$error['date'] = Check::validate($input['date'], array(
-					// 空のチェック
-					array("empty", self::ERR_TIME_EMPTY),
-					// 時間の妥当性
-					array("date", self::ERR_TIME_VALIDATE, FORMAT_TIME)
-				));
+				// IDとパスワードのどちらかが違う
+				if ($input['id'] != $templete_data['id'] ||
+					$input['password'] != $templete_data['password']) {
+					$error['auth'] = ERR_ID_EQUAL;
+				}
 			}
 
 

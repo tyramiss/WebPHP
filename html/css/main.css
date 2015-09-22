@@ -1,0 +1,223 @@
+@charset "utf-8";
+
+/***** default styles
+*******************************************/
+
+body {
+	font-size: 13px;
+}
+
+* {
+	line-height: 1.6;
+	font-size: 100%;
+}
+
+
+/***** text styles
+*******************************************/
+
+html {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	margin: 0 auto;
+	padding: 0;
+	color: #5D5D5D;
+	text-align: center;
+	font-family: "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif;
+}
+
+p {
+	line-height: 1em;
+}
+
+div, p, ul, ol, dl, table, pre {
+	font-size: 100%;
+	letter-spacing: 0.02em;
+}
+
+img {
+	border: 0;
+	vertical-align: bottom;
+}
+
+
+/***** Link styles
+*******************************************/
+
+a {
+	text-decoration: none;
+}
+
+a:link {
+	color: #337ED2;
+	border-bottom: 1px solid #56AEE1;
+}
+
+a:visited {
+	color: #56AEE1;
+	border-bottom: 1px solid #56AEE1;
+}
+
+a:hover {
+	color: #337ED2;
+	border-bottom: 1px solid #337ED2;
+}
+
+
+/***** layout styles
+*******************************************/
+
+#out {
+	margin: 30px auto 10px auto;
+	width: 950px;
+	text-align: left;
+}
+
+#head {
+	margin: 0px auto 20px auto;
+	padding: 10px 0 20px 20px;
+	text-align: left;
+	letter-spacing: 0.1em;
+	border-bottom: 2px solid #CCC;
+}
+
+#menu {
+	text-align: right;
+	font-size: 87%;
+	color: #CCC;
+
+}
+
+h1 {
+	margin: 0 0 5px 0;
+	padding: 0;
+	font-size: 160%;
+	font-weight: normal;
+}
+
+h2 {
+	margin: 0;
+	padding: 0;
+	font-size: 100%;
+	font-weight: normal;
+
+}
+
+h3 {
+	margin: 2.5em 0 1em 0;
+	padding: 0 0 0 10px;
+	font-size: 130%;
+	font-weight: normal;
+	border-left: 3px solid #CCC;
+}
+
+h4 {
+	margin: 2.5em 0 1em 0;
+	padding: 0 0 5px 10px;
+	font-size: 130%;
+	font-weight: normal;
+	border-bottom: 1px solid #CCC;
+}
+
+#main {
+	margin: 0 3em;
+	font-size: 110%;
+	letter-spacing: 0.1em;
+	line-height: 1.9;
+}
+
+#main ul {
+	margin: 0 5px 5px 0;
+	padding: 3px;
+	list-style: circle;
+}
+
+#main li {
+	margin: 0.5em 0 0.5em 1.5em;
+	padding: 0.3em 0 0.3em 0.1em;
+	letter-spacing: 0.02em;
+}
+
+#footer {
+	margin: 3em 0 0 0;
+	padding: 1.5em 0 1em 0em;
+	text-align: center;
+	line-height: 1.9;
+	letter-spacing: 0.1em;
+	border-top: 2px solid #CCC;
+}
+
+.copyright {
+	margin: 0 15px 0 0;
+	padding: 10px 0 30px 0;
+	color: #888;
+	font-size: 75%;
+	text-align: right;
+	letter-spacing: 0.1em;
+}
+
+.copyright a:link,a:visited,a:hover {
+	color: #888;
+	text-decoration: none;
+	border-bottom: none;
+}
+
+
+/***** parts layout styles
+*******************************************/
+
+/* インデント */
+.mgl-2em {
+	margin-left: 2em;
+}
+
+/* ボタンの装飾 */
+.btn {
+	display: inline-block;
+	zoom: 1;
+	padding: 6px 20px;
+	margin: 0;
+	cursor: pointer;
+	border: 1px solid #BBB;
+	overflow: visible;
+	font-weight: bold;
+	text-decoration: none;
+	white-space: nowrap;
+	color: #555;
+	background-color: #DDD;
+	background-clip: padding-box; /* Fix bleeding */
+	border-radius: 3px;
+	box-shadow: 0 1px 0 rgba(0, 0, 0, .3),
+				0 2px 2px -1px rgba(0, 0, 0, .5),
+				0 1px 0 rgba(255, 255, 255, .3) inset;
+	text-shadow: 0 1px 0 rgba(255,255,255, .9);
+}
+.btn:hover{
+	background-color: #EEE;
+	color: #555;
+}
+.btn:active{
+	background: #E9E9E9;
+	position: relative;
+	top: 1px;
+	text-shadow: none;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, .3) inset;
+	outline: none;
+}
+
+/* エラー時のタイトル */
+h3.errors {
+	color: #C00;
+	border-color: #C00;
+}
+/* エラー内容 */
+.errors li {
+	color: #C00;
+}
+
+.errors input {
+	background-color: #FCC;
+}
