@@ -7,3 +7,8 @@ define('FORM_KEY', "_status");
 // 入力の状態
 define('FORM_NONE', "0");	// 未入力
 define('FORM_INPUT', "1");	// 入力
+
+// 日付のフォーマット
+define('FORMAT_DATE', "yyyy/MM/dd");
+// 時間のフォーマット
+define('FORMAT_TIME', "HH:mm:ss");

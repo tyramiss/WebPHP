@@ -20,11 +20,26 @@ class templeteController extends Base_Controller_Action
 	/** 定数 */
 	const CONST_TAMPLETE = "TEMPLETE";		/* 定数は全て大文字を使用してください */
 
+	/** 入力エラー内容 */
+	const ERR_ID_EMPTY       = "IDが入力されていません";
+	const ERR_ID_EQUAL       = "IDが正しくありません";
+	const ERR_PASSWORD_EMPTY = "パスワードが入力されていません";
+	const ERR_PASSWORD_EQUAL = "パスワードが正しくありません";
+	const ERR_DATE_EMPTY     = "日付が入力されていません";
+	const ERR_DATE_VALIDATE  = "日付が正しくありません";
+	const ERR_TIME_EMPTY     = "時間が入力されていません";
+	const ERR_TIME_VALIDATE  = "時間が正しくありません";
+	/* 定数の先頭は用途ごとに同じ名前で統一してください */
+	/* 半角空白で揃えてあげると見やすくなることもあります(逆にない場合が見やすいこともあります) */
+
+
 	/** グローバル変数 */
 	public $pbTemplete;		/* メンバ変数名はキャメルケースを使用してください */
 
+
 	/** プライベート変数 */
 	private $_prTemplete;	/* プライベート変数/関数の先頭には_(アンダーバー)を付けるようにしてください */
+
 
 	/**
 	 * 初期化
@@ -104,10 +119,10 @@ class templeteController extends Base_Controller_Action
 			$input = Util::getPost($this->_request, array(
 				'id'       => "templete",
 				'password' => "templete",
-				'date'     => Zend_Date::now()->toString("yyyy/MM/dd"),
-				'time'     => Zend_Date::now()->toString("HH:mm:ss")
+				'date'     => Zend_Date::now()->toString(FORMAT_DATE),
+				'time'     => Zend_Date::now()->toString(FORMAT_TIME)
 			));
-			/* キー名が <form> で渡された name 名、値が 初期値 */
+			/* array('<form> で渡された name 名', "初期値") */
 
 
 			// DAOからの読み込み
@@ -126,35 +141,35 @@ class templeteController extends Base_Controller_Action
 			// 入力状態を確認
 			if (Util::getInputStatus($this->_request)) {
 				// ID
-				$error['id'] = Util::check($input['id'], array(
+				$error['id'] = Check::validate($input['id'], array(
 					// 空のチェック
-					array("empty", "IDが入力されていません"),
+					array("empty", self::ERR_ID_EMPTY),
 					// データベースと比較
-					array("equal", "IDが正しくありません", $templete_data['id'])
+					array("equal", self::ERR_ID_EQUAL, $templete_data['id'])
 				));
 
 				// Password
-				$error['password'] = Util::check($input['password'], array(
+				$error['password'] = Check::validate($input['password'], array(
 					// 空のチェック
-					array("empty", "パスワードが入力されていません"),
+					array("empty", self::ERR_PASSWORD_EMPTY),
 					// データベースと比較
-					array("equal", "パスワードが正しくありません", $templete_data['password'])
+					array("equal", self::ERR_PASSWORD_EQUAL, $templete_data['password'])
 				));
 
 				// 日付
-				$error['date'] = Util::check($input['date'], array(
+				$error['date'] = Check::validate($input['date'], array(
 					// 空のチェック
-					array("empty", "日付が入力されていません"),
+					array("empty", self::ERR_DATE_EMPTY),
 					// 日付の妥当性
-					array("date", "日付が正しくありません", "yyyy/MM/dd")
+					array("date", self::ERR_DATE_VALIDATE, FORMAT_DATE)
 				));
 
 				// 時間
-				$error['date'] = Util::check($input['date'], array(
+				$error['date'] = Check::validate($input['date'], array(
 					// 空のチェック
-					array("empty", "日付が入力されていません"),
+					array("empty", self::ERR_TIME_EMPTY),
 					// 時間の妥当性
-					array("date", "時間が正しくありません", "HH:mm:ss")
+					array("date", self::ERR_TIME_VALIDATE, FORMAT_TIME)
 				));
 			}
 

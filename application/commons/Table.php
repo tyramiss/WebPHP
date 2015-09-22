@@ -29,7 +29,7 @@ class DB
  * @author Navi
  * @version 1.0.0
  */
-class BASE_Db_Table
+abstract class BASE_Db_Table
 {
 	/** テーブルの名前 */
 	public $name;

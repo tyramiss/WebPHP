@@ -5,6 +5,7 @@ require_once APP_COMMON . 'Controller.php';	// コントローラー基本クラ
 // DAO
 require_once APP_MODEL . 'UserDao.php';		// [DAO] ユーザーテーブル
 
+
 /**
  * WEB最初の登竜門
  *
@@ -13,6 +14,16 @@ require_once APP_MODEL . 'UserDao.php';		// [DAO] ユーザーテーブル
  */
 class IndexController extends Base_Controller_Action
 {
+	/** 入力エラー内容 */
+	const ERR_ID_EMPTY       = "IDが入力されていません";
+	const ERR_ID_EQUAL       = "IDが正しくありません";
+	const ERR_PASSWORD_EMPTY = "パスワードが入力されていません";
+	const ERR_PASSWORD_EQUAL = "パスワードが正しくありません";
+	const ERR_DATE_EMPTY     = "日付が入力されていません";
+	const ERR_DATE_VALIDATE  = "日付が正しくありません";
+	const ERR_TIME_EMPTY     = "時間が入力されていません";
+	const ERR_TIME_VALIDATE  = "時間が正しくありません";
+
 	/**
 	 * 初期化
 	 */
@@ -88,35 +99,35 @@ class IndexController extends Base_Controller_Action
 			// 入力状態の確認
 			if (Util::getInputStatus($this->_request)) {
 				// ID
-				$error['id'] = Util::check($input['id'], array(
+				$error['id'] = Check::validate($input['id'], array(
 					// 空のチェック
-					array("empty", "IDが入力されていません"),
+					array("empty", self::ERR_ID_EMPTY),
 					// データベースと比較
-					array("equal", "IDが正しくありません", $user_data['id'])
+					array("equal", self::ERR_ID_EQUAL, $user_data['id'])
 				));
 
 				// Password
-				$error['password'] = Util::check($input['password'], array(
+				$error['password'] = Check::validate($input['password'], array(
 					// 空のチェック
-					array("empty", "パスワードが入力されていません"),
+					array("empty", self::ERR_PASSWORD_EMPTY),
 					// データベースと比較
-					array("equal", "パスワードが正しくありません", $user_data['password'])
+					array("equal", self::ERR_PASSWORD_EQUAL, $user_data['password'])
 				));
 
 				// 日付
-				$error['date'] = Util::check($input['date'], array(
+				$error['date'] = Check::validate($input['date'], array(
 					// 空のチェック
-					array("empty", "日付が入力されていません"),
+					array("empty", self::ERR_DATE_EMPTY),
 					// 日付の妥当性
-					array("date", "日付が正しくありません", "yyyy/MM/dd")
+					array("date", self::ERR_DATE_VALIDATE, FORMAT_DATE)
 				));
 
 				// 時間
-				$error['time'] = Util::check($input['time'], array(
+				$error['date'] = Check::validate($input['date'], array(
 					// 空のチェック
-					array("empty", "日付が入力されていません"),
+					array("empty", self::ERR_TIME_EMPTY),
 					// 時間の妥当性
-					array("date", "時間が正しくありません", "HH:mm:ss")
+					array("date", self::ERR_TIME_VALIDATE, FORMAT_TIME)
 				));
 			}
 
