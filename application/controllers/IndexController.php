@@ -39,7 +39,7 @@ class IndexController extends Base_Controller_Action
 			// すでにログインしている場合はログアウト
 			$auth = Zend_Auth::getInstance();
 			if ($auth->hasIdentity()) {
-				// $auth->clearIdentity();
+				$auth->clearIdentity();
 			}
 
 			// POSTから入力データを取得
@@ -49,7 +49,35 @@ class IndexController extends Base_Controller_Action
 			));
 
 			// 入力チェック
-			$error = $this->checkInput($input);
+			$error = $this->_checkInput($input);
+
+			// 入力チェックでエラーがなければ認証を試みる
+			if (empty($error)) {
+				// 認証はユーザー情報を使用する
+				$user_dao = new UserDao();
+				$db = new Zend_Auth_Adapter_DbTable(
+					$user_dao->db,
+					$user_dao->name,
+					$user_dao->id,
+					$user_dao->password,
+					$user_dao->treatment
+				);
+
+				// 入力されたユーザーID
+				$db->setIdentity($input['user_id']);
+				// 入力されたパスワード
+				$db->setCredential($input['password']);
+
+				// 認証に成功
+				if ($auth->authenticate($db)->isValid()) {
+					// 確認画面へ遷移
+					$this->redirect("/index/confirm/");
+				}
+				// 認証に失敗
+				else {
+					$error['auth'] = self::ERR_USER_EQUAL;
+				}
+			}
 
 			// Viewへの値を渡す
 			$this->view->input = $input;
@@ -57,30 +85,28 @@ class IndexController extends Base_Controller_Action
 		}
 		catch (Zend_Exception $e) {
 			// エラーの処理
+
+			// レンダリング(ビューの自動表示)をOFF
+			$this->_helper->viewRenderer->setNoRender();
+			$this->getResponse()->setHeader('Content-Type', 'text/plain');
+
+			echo "error\n\n";
+			echo $e->getMessage();
 		}
 	}
 
 	/**
-	 * サイト入り口
+	 * 確認画面
 	 */
-	public function _indexAction() {
+	public function confirmAction() {
 		try {
-			// ユーザーテーブルの読み込み
-			$user_dao = new UserDao();
-			// $ins = $user_dao->insert(array(
-			// 	'user_id' => "test2",
-			// 	'password' => "tset2",
-			// 	'name' => "Test2"
-			// ));
-			// echo $ins , "\n";
-			// $del = $user_dao->delete(array('user_id' => "test"));
-			// echo $del , "\n";
-			// $upd = $user_dao->update(array('user_id' => "vagrant"));
-			// echo $upd , "\n";
-			// $this->view->user = $user_dao->find();
-			// $this->view->count = $user_dao->count(array('ids' => 0));
+			// 認証
+			$auth = Util::auth();
+
+			// Viewへの値を渡す
+			$this->view->userId = $auth->getIdentity();
 		}
-		catch(Zend_Exception $e) {
+		catch (Zend_Exception $e) {
 			// エラーの処理
 
 			// レンダリング(ビューの自動表示)をOFF
@@ -98,7 +124,7 @@ class IndexController extends Base_Controller_Action
 	 * @param array $input 入力リクエスト
 	 * @return array 入力エラー内容
 	 */
-	private function checkInput($input) {
+	private function _checkInput($input) {
 		// エラー変数の初期化
 		$error = array(); // Util::cloneArrayKey($input);
 
@@ -120,33 +146,6 @@ class IndexController extends Base_Controller_Action
 				array("empty", self::ERR_PASSWORD_EMPTY)
 			)
 		));
-
-		// 入力チェックでエラーがなければ認証を試みる
-		if (empty($error)) {
-			// 認証はユーザー情報を使用する
-			$user_dao = new UserDao();
-			$auth = new Zend_Auth_Adapter_DbTable(
-				$user_dao->db,
-				$user_dao->name,
-				$user_dao->id,
-				$user_dao->password,
-				$user_dao->treatment
-			);
-
-			// 入力されたユーザーID
-			$auth->setIdentity($input['user_id']);
-			// 入力されたパスワード
-			$auth->setCredential($input['password']);
-
-			// 認証に成功
-			if ($auth->authenticate()->isValid()) {
-				// 成功時の処理
-			}
-			// 認証に失敗
-			else {
-				$error['auth'] = self::ERR_USER_EQUAL;
-			}
-		}
 
 		// エラー内容を返す
 		return $error;

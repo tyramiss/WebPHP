@@ -8,6 +8,21 @@
 class Util
 {
 	/**
+	 * 認証
+	 */
+	public static function auth() {
+		// 認証状態を取得
+		$auth = Zend_Auth::getInstance();
+		// 認証できていなければリダイレクトする
+		if ($auth->hasIdentity()) {
+			header("Location: " . AUTH_NOT_REDIRECT);
+			exit();
+		}
+		// 認証を返す
+		return $ath;
+	}
+
+	/**
 	 * POSTに入力された値を取得する
 	 *
 	 * @param Zend_Controller_Request_Http $request リクエストオブジェクト

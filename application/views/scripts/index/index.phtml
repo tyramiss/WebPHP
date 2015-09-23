@@ -7,7 +7,7 @@
 </head>
 <body>
 <form method="post" name="main"><?/* name属性は任意 */?>
-<input type="hidden" name="<?=FORM_KEY?>" value="<?=FORM_INPUT?>"><?/* 必須項目 */?>
+<?=$this->formHidden(FORM_KEY, FORM_INPUT)?>
 <div id="out">
 
 	<div id="head">
@@ -31,11 +31,11 @@
 
 		<h3>ログインに挑戦してください</h3>
 		<p>ユーザーID :</p>
-		<p class="mgl-2em <?=cs_err($this->error, "user_id", "auth")?>">
+		<p class="mgl-2em <?=css_err($this->error, "user_id", "auth")?>">
 			<?=$this->formText("user_id", $this->input['user_id'], array('size' => 30))?>
 		</p>
 		<p>パスワード :</p>
-		<p class="mgl-2em <?=cs_err($this->error, "password", "auth")?>">
+		<p class="mgl-2em <?=css_err($this->error, "password", "auth")?>">
 			<?=$this->formPassword("password", $this->input['password'], array('size' => 30))?>
 		</p>
 		<p><input type="submit" value="ログイン" class="btn"></p>
@@ -51,20 +51,5 @@
 	</div>
 </div>
 </form>
-
-<!--
-	<h1>ログイン</h1>
-	はじめてのZendFramework<br>
-	<?= $this->formSelect("sel", 2, null, array(1 => "a", 2 => "b")) ?><br>
-	<?= $this->formMultiCheckbox("chk", 2, null, array(1 => "a", 2 => "b"), "&nbsp;") ?><br>
-	<?= $this->formErrors(array("a", "b")) ?><br>
-	Count = <?= $this->count?><br>
-	DataBase :<br>
-	<?= h_sys(print_r($this->user->toArray(), true)) ?><br>
-	<br>
-	Check :<br>
-	<?= h_sys($this->input) ?><br>
-	<?= h_sys($this->error) ?>
--->
 </body>
 </html>

@@ -12,3 +12,6 @@ define('FORM_INPUT', "1");	// 入力
 define('FORMAT_DATE', "yyyy/MM/dd");
 // 時間のフォーマット
 define('FORMAT_TIME', "HH:mm:ss");
+
+// 認証失敗時のリダイレクト先
+define('AUTH_NOT_REDIRECT', "/");

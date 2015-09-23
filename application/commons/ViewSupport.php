@@ -52,7 +52,7 @@ function h_sys($str) {
  * @param string 確認するエラー変数名
  * @return string エラー時はエラークラスを返す
  */
-function cs_err() {
+function css_err() {
 	// エラー内容
 	$error = func_get_arg(0);
 	// 複数のチェックに対応
