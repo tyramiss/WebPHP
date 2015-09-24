@@ -43,24 +43,6 @@ class Util
 	}
 
 	/**
-	 * 渡された配列と同じ構造の配列を作成する
-	 *
-	 * @param array $base 配列または連想配列
-	 * @param mixed $default 配列内の初期値
-	 * @return $baseと同じ構造の配列
-	 */
-	public static function cloneArrayKey($base, $default = null) {
-		// キー名のみ複製用の変数
-		$key_clone = array();
-		// キー名のみ複製する
-		foreach (array_keys($base) as $key) {
-			$key_clone[$key] = $default;
-		}
-		// 複製した変数を返す
-		return $key_clone;
-	}
-
-	/**
 	 * 入力の状態を取得する
 	 *
 	 * @param Zend_Controller_Request_Http $request リクエストオブジェクト

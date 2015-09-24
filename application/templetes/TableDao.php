@@ -41,28 +41,11 @@ class TempleteDao extends BASE_Db_Table
 	 *       ...
 	 *     )
 	 *
-	 *   $options : オプション
+	 *   $where : 条件
 	 *     array(
-	 *       'column' => [カラム名]
-	 *       'where'  => [条件]
-	 *       'order'  => [並び順]
+	 *       [条件式] => [値]
 	 *       ...
 	 *     )
-	 *
-	 *     [カラム名]
-	 *       表示するカラム名の配列
-	 *       array(
-	 *         [カラム名],
-	 *         [カラム名] => [表示項目名]
-	 *         ...
-	 *       )
-	 *
-	 *     [条件]
-	 *       array(
-	 *         [条件式] => [値]
-	 *         ...
-	 *       )
-	 *
 	 *     [条件式]
 	 *       'id = ?'        => 23             -> id = 23
 	 *       'name LIKE ?'   => "%北%"         -> name LIKE '%北%'
@@ -71,15 +54,6 @@ class TempleteDao extends BASE_Db_Table
 	 *       'password'      => array("a","b") -> password IN ('a','b')
 	 *
 	 *     ※ 複数の条件はANDで結合します
-	 *     ※ 値が空だと条件は作られません
-	 *
-	 *     [並び順]
-	 *       並びの優先順位
-	 *       array(
-	 *         [カラム名],
-	 *         [カラム名] ASC
-	 *         ...
-	 *       )
 	 */
 
 	/*
@@ -91,8 +65,8 @@ class TempleteDao extends BASE_Db_Table
 
 	/*
 	 * データを取得
-	 *   $this->find([$option])
-	 *   @param $option : オプション (省略可)
+	 *   $this->find([$where])
+	 *   @param $where : 条件 (省略可)
 	 *   @return Zend_Db::FETCH_ASSOC データの配列
 	 */
 
@@ -238,4 +212,5 @@ class TempleteDao extends BASE_Db_Table
 			throw $e;
 		}
 	}
+
 }

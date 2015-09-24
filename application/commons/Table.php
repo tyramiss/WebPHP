@@ -10,6 +10,9 @@ require_once 'Zend/Db/Table.php';
  */
 class DB
 {
+	/** DB接続 */
+	public $db;
+
 	/**
 	 * データベースの接続
 	 *
@@ -20,6 +23,35 @@ class DB
 		$config = new Zend_Config_Ini(APP_CONFIG . "application.ini", "database");
 		// データベースへ接続
 		return Zend_Db::factory($config->adapter, $config->params);
+	}
+
+	/**
+	 * コンストラクタ
+	 */
+	function __construct() {
+		// データベースへ接続
+		$this->db = Self::Connect();
+	}
+
+	/**
+	 * トランザクション開始
+	 */
+	public function begin() {
+		$this->db->beginTransaction();
+	}
+
+	/**
+	 * コミット
+	 */
+	public function commit() {
+		$this->db->commit();
+	}
+
+	/**
+	 * ロールバック
+	 */
+	public function rollback() {
+		$this->db->rollback();
 	}
 }
 
@@ -64,7 +96,7 @@ abstract class BASE_Db_Table
 		$this->db = $db;
 
 		// テーブルへ接続
-		$this->table = new Zend_Db_Table(array('db' => $this->db, 'name' => $this->name));
+		$this->table = new Zend_Db_Table(array('db' => $db, 'name' => $this->name));
 	}
 
 	/**
@@ -92,20 +124,28 @@ abstract class BASE_Db_Table
 	/**
 	 * データの取得
 	 *
-	 * @param array $where 条件
+	 * @param array $option オプション
 	 * @return Zend_Db::FETCH_ASSOC データのリスト
 	 */
-	public function find($where = array()) {
-		// 条件なし
-		if (empty($where)) {
-			return $this->table->fetchAll();
-		}
-
+	public function find($option = array()) {
 		// SELECT作成
 		$select = $this->table->select();
 
-		// 条件の作成
-		$select = self::_createWhere($select, $where);
+		// フィールド条件
+		if (!empty($option['column'])) {
+			$select->form($this->table, $option['column']);
+		}
+
+		// 条件
+		if (!empty($option['where'])) {
+			// 条件の作成
+			$select = self::_createWhere($select, $option['where']);
+		}
+
+		// 並び順
+		if (!empty($option['order'])) {
+			$select->order($option['order']);
+		}
 
 		// 結果を返す
 		return $this->db->fetchAll($select);
@@ -246,7 +286,10 @@ abstract class BASE_Db_Table
 		$where = self::_correctionWhere($where);
 		// 条件の作成
 		foreach ($where as $key => $value) {
-			$select->where($key, $value);
+			// 値が空の場合は除外
+			if (!empty($value)) {
+				$select->where($key, $value);
+			}
 		}
 		// 条件の追加されたSelectオブジェクトを返す
 		return $select;
@@ -276,6 +319,187 @@ abstract class BASE_Db_Table
 	protected function _rollback() {
 		if ($this->begin) {
 			$this->db->rollback();
+		}
+	}
+}
+
+/**
+ * UNIONテーブルの基本クラス
+ *
+ * @author Navi
+ * @version 1.0.0
+ */
+abstract class BASE_Db_Union
+{
+	/** テーブルの名前 */
+	public $name;
+
+	/** データベース */
+	public $db;
+
+	/** テーブル */
+	public $table;
+
+	/** フィールド名変換候補 */
+	public $as = array();
+
+	/**
+	 * コンストラクタ
+	 *
+	 * @param Zend_Db $db 接続済みのデータベースオブジェクト
+	 * @param boolean $begin 自動トランザクション設定
+	 */
+	function __construct($db = null) {
+		// データベースへ接続
+		if (is_null($db)) {
+			$db = DB::Connect();
+		}
+
+		// データベースをクラスメンバに反映
+		$this->db = $db;
+
+		// 複数のテーブル処理
+		$this->_select = array();
+		foreach ($this->name as $name) {
+			// テーブルへ接続
+			$this->table[$name] = new Zend_Db_Table(array('db' => $db, 'name' => $name));
+		}
+	}
+
+	/**
+	 * SELECTクラスを取得する
+	 *
+	 * return Zend_Db_Select SELECTクラス
+	 */
+	public function select($name = null) {
+		// 名前指定がない場合はDBから作成
+		if (empty($name)) {
+			return $this->db->select();
+		}
+		// 名前指定がある場合はテーブルから作成
+		return $this->table[$name]->select();
+	}
+
+	/**
+	 * UNION結合済みのSELECTクラスを取得する
+	 *
+	 * return Zend_Db_Select SELECTクラス
+	 */
+	public function union() {
+		$all = $this->db->select();
+		foreach ($this->_select as $select) {
+			$all->union($select);
+		}
+		return $all;
+	}
+
+	/**
+	 * データの取得
+	 *
+	 * @param array $option オプション
+	 * @return Zend_Db::FETCH_ASSOC データのリスト
+	 */
+	public function find($option = array()) {
+		// 全体SELECTクラス
+		$select = $this->db->select();
+
+		// 各テーブル処理
+		foreach ($this->table as $name => $table) {
+			$child = $table->select();
+			$child->form($table, $this->getColumns($name));
+			$select->union($child);
+		}
+
+		// フィールド条件
+		if (!empty($option['column'])) {
+			$select->form($this->table, $option['column']);
+		}
+
+		// 条件
+		if (!empty($option['where'])) {
+			// 条件の作成
+			$select = BASE_Db_Table::_createWhere($select, $option['where']);
+		}
+
+		// 並び順
+		if (!empty($option['order'])) {
+			$select->order($option['order']);
+		}
+
+		// 結果を返す
+		return $this->db->fetchAll($select);
+	}
+
+	/**
+	 * カラム名を取得する
+	 *
+	 * @param string $name 取得したいテーブル名
+	 * @param string $filed 取得したいテーブル名
+	 * @return string カラム名を返す。存在しなければ NULL を返す
+	 */
+	public function getColumn($name, $filed) {
+		// 存在する変数
+		if (isset($this->as[$filed][$name])) {
+			return $this->as[$filed][$name];
+		}
+		// 存在しなかった
+		return null;
+	}
+
+	/**
+	 * フィールド名を取得する
+	 *
+	 * @param string $name 取得したいテーブル名
+	 * @return string|array フィールド名
+	 */
+	public function getColumns($name) {
+		// フィールド名用
+		$columns = array();
+		// 変換候補から作成
+		foreach ($this->as as $key => $info) {
+			if (isset($info[$name])) {
+				$columns[$key] = $info[$name];
+			}
+		}
+		// 変換候補なしの場合は全カラム
+		if (empty($columns)) {
+			$columns = "*";
+		}
+		return $columns;
+	}
+
+	/**
+	 * フィールド名を登録する
+	 *
+	 * @param string $name 登録したいテーブル名
+	 * @param string $column カラム名
+	 * @param string $filed フィールド名
+	 */
+	public function addColumns($name, $column, $filed) {
+		// 初回作成
+		if (empty($this->as[$filed])) {
+			$this->as[$filed] = array();
+		}
+		// 登録
+		$this->as[$filed][$name] = $column;
+	}
+
+	/**
+	 * フィールド名から削除する
+	 *
+	 * @param string $name 削除したいテーブル名
+	 * @param string$filed フィールド名
+	 */
+	public function removeColumns($name, $filed = null) {
+		foreach ($this->as as $key => $info) {
+			// 候補ではない
+			if (empty($info[$name])) {
+				next;
+			}
+			// カラム名なし
+			if (empty($fileds) || $key == $filed) {
+				unlink($info[$name]);
+			}
 		}
 	}
 }
