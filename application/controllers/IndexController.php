@@ -35,15 +35,17 @@ class IndexController extends Base_Controller_Action
 	 * ロップページ/ログイン
 	 */
 	public function indexAction() {
+		// データベース取得
+		$db = Db::Connect();
+		// トランザクション
+		$db->beginTransaction();
+
 		try {
 			// すでにログインしている場合はログアウト
-			$auth = Zend_Auth::getInstance();
-			if ($auth->hasIdentity()) {
-				$auth->clearIdentity();
-			}
+			Auth::logout();
 
 			// POSTから入力データを取得
-			$input = Util::getPost($this->_request, array(
+			$input = Util::getPost($this->getRequest(), array(
 				'user_id'  => "",
 				'password' => ""
 			));
@@ -52,24 +54,9 @@ class IndexController extends Base_Controller_Action
 			$error = $this->_checkInput($input);
 
 			// 入力チェックでエラーがなければ認証を試みる
-			if (empty($error)) {
-				// 認証はユーザー情報を使用する
-				$user_dao = new UserDao();
-				$db = new Zend_Auth_Adapter_DbTable(
-					$user_dao->db,
-					$user_dao->name,
-					$user_dao->id,
-					$user_dao->password,
-					$user_dao->treatment
-				);
-
-				// 入力されたユーザーID
-				$db->setIdentity($input['user_id']);
-				// 入力されたパスワード
-				$db->setCredential($input['password']);
-
+			if (empty($error) && Util::getInputStatus($this->getRequest())) {
 				// 認証に成功
-				if ($auth->authenticate($db)->isValid()) {
+				if (Auth::login($db, $input['user_id'], $input['password'])) {
 					// 確認画面へ遷移
 					$this->redirect("/index/confirm/");
 				}
@@ -79,11 +66,25 @@ class IndexController extends Base_Controller_Action
 				}
 			}
 
+			// ユーザー
+			$user_dao = new UserDao($db);
+			$user_dao->find("vagrant");
+			$user_daob = new UserDao($db);
+			$user_daob->find("test");
+			$user_dao->union($user_daob);
+
 			// Viewへの値を渡す
 			$this->view->input = $input;
 			$this->view->error = $error;
+			$this->view->user = $user_dao->fetchAll();
+
+			// コミット
+			$db->commit();
 		}
 		catch (Zend_Exception $e) {
+			// ロールバック
+			$db->rollback();
+
 			// エラーの処理
 
 			// レンダリング(ビューの自動表示)をOFF
@@ -129,7 +130,7 @@ class IndexController extends Base_Controller_Action
 		$error = array(); // Util::cloneArrayKey($input);
 
 		// 未入力の場合は何もしない
-		if (!Util::getInputStatus($this->_request)) {
+		if (!Util::getInputStatus($this->getRequest())) {
 			return $error;
 		}
 

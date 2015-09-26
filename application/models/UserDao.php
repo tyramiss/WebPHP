@@ -8,17 +8,22 @@ require_once APP_COMMON . 'Table.php';
  * @author Navi
  * @version 1.0.0
  */
-class UserDao extends BASE_Db_Table
+class UserDao extends Base_Db_Table
 {
 	/** テーブル名 */
-	public $name = "user";
+	protected $_name = "user";
 
-	/** 認証のユーザーID */
-	public $id = "user_id";
+	/**
+	 * 値を取得する
+	 */
+	public function find($where) {
+		// select
+		$select = $this->select();
 
-	/** 認証のパスワード */
-	public $password = "password";
+		// where
+		$select->where("user_id = ?", $where);
 
-	/** 認証時の条件 */
-	public $treatment = "? AND status = 1";
+		// 結果を返す
+		return $this;
+	}
 }

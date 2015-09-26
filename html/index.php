@@ -4,6 +4,6 @@ define('APP', dirname(dirname(__FILE__)) . "/application/");	// アプリケー�
 require_once 'Zend/Config/Ini.php';							// ZendFramework設定ファイルリーダー読み込み
 require_once 'Zend/Controller/Front.php';					// ZendFrameworkフロントコントローラスクリプト読み込み
 require_once APP . '/configs/path.php';						// パス設定読み込み
-require_once APP_COMMON . 'constant.php';					// 共通定数読み込み
+require_once APP_COMMON . 'Constant.php';					// 共通定数読み込み
 
 Zend_Controller_Front::run(APP . "controllers");			// アクションコントローラの呼び出し
