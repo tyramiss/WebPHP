@@ -15,7 +15,7 @@ require_once APP_MODEL . 'TempleteDao2.php';
  * @author Navi
  * @version 1.0.0
  */
-class UnionDao extends BASE_Db_Select
+class UnionDao extends Base_Db_Select	/* Base_Db_Table と違う事に注意 */
 {
 	/*
 	 * このクラスには下記の関数が用意されています

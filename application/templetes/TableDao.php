@@ -13,7 +13,7 @@ require_once APP_COMMON . 'Table.php';
  * @author Navi
  * @version 1.0.0
  */
-class TempleteDao extends BASE_Db_Table
+class TempleteDao extends Base_Db_Table
 {
 	/** テーブル名 */
 	protected $_name = "templete";	/* テーブルまたはビューの名前を書きます(必須) */
@@ -113,6 +113,24 @@ class TempleteDao extends BASE_Db_Table
 		// Join結合
 		$select->join("templete2", "templete2.id = templete.id");
 		$select->leftJoin("templete3", "templete3.id = templete.id");
+
+		return $this;
+	}
+
+	/**
+	 * EXISTSサンプル
+	 *
+	 * @return Base_Db_Table 自身を返す
+	 */
+	public function customExists() {
+		// Existsしたいサブクエリ作成
+		$sub = new SubDao($this->_db);	/* DAOファイルを require_once で呼ぶか引数で受け取る */
+		$sub->subFind();	/* 予め作成しておいた関数 */
+
+		// SELECT作成
+		$select = $this->select();
+		// Exists
+		$select->where("EXISTS ?", $sub->get());
 
 		return $this;
 	}
