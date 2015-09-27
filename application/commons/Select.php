@@ -1,15 +1,17 @@
 <?php
-// include
-require_once 'Zend/Db/Table.php';
-
 /**
  * テーブルの基本クラス
  *
  * @author Navi
  * @version 1.0.0
  */
-abstract class Base_Db_Table extends Zend_Db_Table_Abstract implements Iterator
+abstract class Base_Db_Select implements Iterator
 {
+	/**
+	 * データベースオブジェクト
+	 */
+	private $_db;
+
 	/**
 	 * セレクトオブジェクト
 	 */
@@ -42,15 +44,22 @@ abstract class Base_Db_Table extends Zend_Db_Table_Abstract implements Iterator
 	 * @param boolean $begin 自動トランザクション設定
 	 */
 	function __construct($db) {
-		// 親のコンストラクタ
-		parent::__construct(array('db' => $db));
-
+		// データベースオブジェクト
+		$this->db = $db;
 		// 初期SELECT作成
-		$this->_select = parent::select();
-		$this->_select->setIntegrityCheck(false);
+		$this->_select = $this->db->select();
 
 		// デフォルトのフェッチモード
 		$this->_mode = Zend_Db::FETCH_ASSOC;
+	}
+
+	/**
+	 * データベースオブジェクトの取得
+	 *
+	 * @return Zend_Db データベースオブジェクト
+	 */
+	public function db() {
+		return $this->_db;
 	}
 
 	/**
@@ -68,8 +77,7 @@ abstract class Base_Db_Table extends Zend_Db_Table_Abstract implements Iterator
 	 * @return Zend_Db_Select SELECTオブジェクト
 	 */
 	public function &select() {
-		$this->_select = parent::select();
-		$this->_select->setIntegrityCheck(false);
+		$this->_select = $this->db->select();
 		return $this->_select;
 	}
 
@@ -88,13 +96,11 @@ abstract class Base_Db_Table extends Zend_Db_Table_Abstract implements Iterator
 	 * @param mixed $tables 結合するテーブル一覧
 	 * @return Zend_Db_Select 結合したSELECTオブジェクト
 	 */
-	public function &union($tables, $mode = Zend_Db_Select::SQL_UNION_ALL) {
+	public function union($tables, $mode = Zend_Db_Select::SQL_UNION_ALL) {
 		// 配列ではない
 		if (!is_array($tables)) {
 			$tables = array($tables);
 		}
-		// 自身を含めた配列を作成
-		$tables = array_merge(array($this->_select), $tables);
 
 		// 変換処理
 		foreach ($tables as &$table) {
@@ -124,7 +130,6 @@ abstract class Base_Db_Table extends Zend_Db_Table_Abstract implements Iterator
 		}
 
 		// Union
-		$this->_select = $this->_db->select();
 		$this->_select->union($tables, $mode);
 
 		// 結果を返す

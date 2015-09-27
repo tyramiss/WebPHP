@@ -69,13 +69,13 @@ class templeteController extends Base_Controller_Action
 			// リクエスト処理
 
 			// GETからIDを取得
-			$user_id = $this->_request->getQuery("id", "templete");
+			$user_id = $this->getRecest()->getQuery("id", "templete");
 			/* 第一引数がGETで渡された変数名、第二引数が存在しない時のデフォルト値になっています */
 
 			/* ローカル変数はスネークケース */
 
 			// POSTからパスワードを取得
-			$password = $this->_request->getPost("password", "templete");
+			$password = $this->getRecest()->getPost("password", "templete");
 			/* 第一引数がPOSTで渡された変数名、第二引数が存在しない時のデフォルト値になっています */
 
 
@@ -83,7 +83,7 @@ class templeteController extends Base_Controller_Action
 
 			// Templeteから読み込み
 			$templete_dao = new TempleteDao();	/* DAOクラスの変数名はクラス名を全て小文字にしスネークケースにしてください */
-			$templete_list = $templete_dao->find(array('id=?' => $id, 'password=' => $password));
+			$templete_list = $templete_dao->find();
 
 
 			// View関連

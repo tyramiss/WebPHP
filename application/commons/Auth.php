@@ -12,12 +12,26 @@ require_once 'Zend/Auth/Adapter/DbTable.php';
 class Auth
 {
 	/**
-	 * 認証状態を取得
-	 *
-	 * @return boolean 認証状態
+	 * 認証の確認
 	 */
-	public static function status() {
-		return Zend_Auth::getInstance()->hasIdentity();
+	public static function getInstance() {
+		// 認証状態を取得
+		return Zend_Auth::getInstance();
+	}
+
+	/**
+	 * 認証の確認
+	 */
+	public static function check() {
+		// 認証状態を取得
+		$auth = Zend_Auth::getInstance();
+		// 認証できていなければリダイレクトする
+		if (!$auth->hasIdentity()) {
+			header("Location: " . AUTH_NOT_REDIRECT);
+			exit();
+		}
+		// 認証を返す
+		return $auth;
 	}
 
 	/**
@@ -45,7 +59,8 @@ class Auth
 
 		// 認証問い合わせ結果を返す
 		$auth = Zend_Auth::getInstance();
-		return ($auth->authenticate($table)->isValid());
+		$result = $auth->authenticate($table);
+		return ($result->isValid());
 	}
 
 	/**

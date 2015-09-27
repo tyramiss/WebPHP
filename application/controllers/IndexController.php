@@ -101,8 +101,8 @@ class IndexController extends Base_Controller_Action
 	 */
 	public function confirmAction() {
 		try {
-			// 認証
-			$auth = Util::auth();
+			// 認証確認
+			$auth = Auth::check();
 
 			// Viewへの値を渡す
 			$this->view->userId = $auth->getIdentity();

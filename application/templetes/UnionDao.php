@@ -1,9 +1,11 @@
 <?php
 // include
-require_once APP_COMMON . 'Table.php';
+require_once APP_COMMON . 'Select.php';
+require_once APP_MODEL . 'TempleteDao1.php';		/* 連携するテーブルのDAOを書きます */
+require_once APP_MODEL . 'TempleteDao2.php';
 
 /**
- * UnionTableDAOのテンプレート
+ * DAOのテンプレート
  *
  * DAOの説明
  * どういうテーブルに繋がっているかの説明とか
@@ -13,171 +15,76 @@ require_once APP_COMMON . 'Table.php';
  * @author Navi
  * @version 1.0.0
  */
-class TempleteDao extends BASE_Db_Union
+class UnionDao extends BASE_Db_Select
 {
-	/** テーブル名 */
-	public $name = array("templete1", "templete2");	/* テーブルまたはビューの名前を書きます(必須) */
-	/* UNION結合するテーブルまたはビュー名を配列で記述してください */
-
-	/** フィールド名変換候補 */
-	public $as = array(		/* 後で追加や削除、変更ができます。変数宣言なし、空の場合は"*"となります */
-		'user_id' => array(
-			'templete1' => "main_id",	/* SQL → templete1.main_id AS user_id */
-			'templete2' => "test_id"	/* SQL → templete2.test_id AS user_id */
-		),
-		'password' => array(
-			'templete1' => "main_ps",
-			'templete2' => "test_ps"
-		)
-	);
-
 	/*
-	 * テーブル名を記述するだけで最低限の機能は実装されてます
+	 * このクラスには下記の関数が用意されています
 	 *
-	 * $this->find() : データを取得
+	 * $this->select()       : SELECTを作成
+	 * $this->get()          : SELECTを取得
+	 * $this->union()        : 結果セットを結合する
+	 * $this->query()        : ステートメントの作成
+	 * $this->fetch()        : 結果セットからの単一の行の取得
+	 * $this->fetchAll()     : 結果セット全体の取得
+	 * $this->fetchAssoc()   : 連想配列形式での結果セットの取得
+	 * $this->fetchCol()     : 結果セットの単一のカラムの取得
+	 * $this->fetchPairs()   : 結果セットからの キー/値 のペアの取得
+	 * $this->fetchRow()     : 結果セットからの単一の行の取得
+	 * $this->fetchOne()     : 結果セットからの単一のスカラー値の取得
+	 * $this->setFetchMode() : フェッチモードの設定
+	 *
+	 * $this->fetch〜 はZend_Db_Selectのドキュメントの各関数と同じ動作します
 	 */
 
 	/*
-	 * 引数の種類
-	 *   $data : データ
-	 *     array(
-	 *       [カラム名] => [値]
-	 *       ...
-	 *     )
+	 * このクラスは foreach に対応しています
+	 * 下記の動作は同じになります
 	 *
-	 *   $option : オプション
-	 *     array(
-	 *       'column' => [カラム名]
-	 *       'where'  => [条件]
-	 *       'order'  => [並び順]
-	 *       ...
-	 *     )
+	 * foreach
+	 *   foreach($this as $key => $row) {
+	 *       var_dump($row);
+	 *   }
 	 *
-	 *     [カラム名]
-	 *       表示するカラム名の配列
-	 *       array(
-	 *         [カラム名],
-	 *         [カラム名] => [表示項目名]
-	 *         ...
-	 *       )
+	 * while & fetch
+	 *   $key = 0;
+	 *   while ($row = $this->fetch()) {
+	 *       var_dump($row);
+	 *       $key++;
+	 *   }
 	 *
-	 *     [条件]
-	 *       array(
-	 *         [条件式] => [値]
-	 *         ...
-	 *       )
-	 *
-	 *     [条件式]
-	 *       'id = ?'        => 23             -> id = 23
-	 *       'name LIKE ?'   => "%北%"         -> name LIKE '%北%'
-	 *       'statuc IN (?)' => array(0,1,2)   -> status IN (0,1,2) 
-	 *       'user_id'       => "test"         -> user_id = 'test'
-	 *       'password'      => array("a","b") -> password IN ('a','b')
-	 *
-	 *     ※ 複数の条件はANDで結合します
-	 *     ※ 値が空だと条件は作られません
-	 *
-	 *     [並び順]
-	 *       並びの優先順位
-	 *       array(
-	 *         [カラム名],
-	 *         [カラム名] ASC
-	 *         ...
-	 *       )
-	 */
-
-	/*
-	 * データを取得
-	 *   $this->find([$option])
-	 *   @param $option : オプション (省略可)
-	 *   @return Zend_Db::FETCH_ASSOC データの配列
+	 * fetchAll
+	 *   $list = $this->fetchAll();
+	 *   foreach($list as $key => $row) {
+	 *       var_dump($row);
+	 *   }
 	 */
 
 	/**
-	 * カスタムUNION関数
+	 * Unionによる結果を取得
 	 *
-	 * @return Zend_Db_Table_Rowset データの配列
+	 * @return Base_Db_Table 自身を返す
 	 */
 	public function customUnion() {
-		// 各テーブルのSELECTを設定
-		$child_1 = $this->select("templete1");	/* $this->db->select()と同じ */
-		// フィールド名変換候補を使用してフィールド名を制限
-		$child_1->from("templete1", $this->getColumns("templete1"));
-		// 結合
-		$child_1->join("templete3", "templete3.id = templete1.id");
+		// 結合するDAO1
+		$dao1 = new TempleteDao1($this->db());
+		$select1 = $dao1->select();
+		$select1->where(array('id = ?' => 11));
 
-		/*
-		 * その他は Zend_Db_Table でできる事と同じです
-		 */
+		// 結合するDAO1
+		$dao2 = new TempleteDao2($this->db());
+		$dao2->customFind();
 
-		// 各テーブルのSELECTを設定
-		$child_2 = $this->select("templete2");
-		// 結合
-		$child_2->leftJoin("templete3", "templete3.id = templete2.id");
-
-		// Union
-		$all = $this->union($child_1, $child_2);
-		// 条件
-		$all->where("id > ?", 0);
-		$all->orWhere("user_id = ?", "vagrant");
-		/*
-		 * self::_createWhere関数で配列を自動解釈することもできます
-		 * 詳細は BASE_Db_Table::_createWhere() を参照してください
-		 */
-		// 並び順
-		$all->order("user_id");
-
-		// 結果を返す
-		return $this->db->fetchAll($all);
-	}
-
-	/**
-	 * 通常find関数にwhere区のみ独自
-	 *
-	 * @param array $option オプション
-	 * @return Zend_Db::FETCH_ASSOC データのリスト
-	 */
-	public function customFind($option) {
-		// 全体SELECTクラス
-		$select = $this->db->select();
-
-		// 各テーブル処理
-		foreach ($this->table as $name => $table) {
-			$child = $table->select();
-			$child->form($table, $this->getColumns($name));
-			$select->union($child);
-		}
-
-		// フィールド条件
-		if (!empty($option['column'])) {
-			$select->form($this->table, $option['column']);
-		}
-
-		// 条件
-		if (!empty($option['column'])) {
-			foreach ($option['column'] as $key => $value) {
-				if (empty($value)) {
-					next;
-				}
-				switch($key) {
-					case "id"       : $select->where("id > ?", $value); break;
-					case "user_id"  : $select->orWhere("user_id LIKE ?", $value); break;
-					case "password" : $select->where("password = ?", $value); break;
-					case "text" :
-						// AND (name LIKE '%***%' OR kana LIKE '%***%')
-						$like = "%{$value}%";
-						$select->where("name LIKE ? OR kana LIKE ?", array($like, $like));
-						break;
-				}
-			}
-		}
+		// Union結合
+		$select = $this->union(array($dao1, $dao2));
 
 		// 並び順
-		if (!empty($option['order'])) {
-			$select->order($option['order']);
-		}
+		$select->order("id");
+		$select->order("date ASC");
 
-		// 結果を返す
-		return $this->db->fetchAll($select);
+		/*
+		 * コントローラー側で BASE_Db_Table::fetch() 等を使用する為に自身を返しています
+		 * 関数呼び出し時に結果セットが必要であれば $this->fetch() 等にしてください
+		 */
+		return $this;
 	}
 }

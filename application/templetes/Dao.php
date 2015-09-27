@@ -16,226 +16,116 @@ require_once APP_COMMON . 'Table.php';
 class TempleteDao extends BASE_Db_Table
 {
 	/** テーブル名 */
-	public $name = "templete";	/* テーブルまたはビューの名前を書きます(必須) */
-
-	/** 自動トランザクション処理設定 */
-	public $begin = true;
-	/* トランザクションの自動化、記述しなければ設定が有効になります */
+	protected $_name = "templete";	/* テーブルまたはビューの名前を書きます(必須) */
 
 	/*
-	 * テーブル名を記述するだけで最低限の機能は実装されてます
+	 * このクラスには下記の関数が用意されています
 	 *
-	 * $this->count()   : 件数を取得
-	 * $this->find()    : データを取得
-	 * $this->findRow() : 1件のデータを取得
-	 * $this->insert()  : データを登録
-	 * $this->update()  : データを変更
-	 * $this->delete()  : データを削除
+	 * $this->select()       : SELECTを作成
+	 * $this->get()          : SELECTを取得
+	 * $this->union()        : 結果セットを結合する
+	 * $this->query()        : ステートメントの作成
+	 * $this->fetch()        : 結果セットからの単一の行の取得
+	 * $this->fetchAll()     : 結果セット全体の取得
+	 * $this->fetchAssoc()   : 連想配列形式での結果セットの取得
+	 * $this->fetchCol()     : 結果セットの単一のカラムの取得
+	 * $this->fetchPairs()   : 結果セットからの キー/値 のペアの取得
+	 * $this->fetchRow()     : 結果セットからの単一の行の取得
+	 * $this->fetchOne()     : 結果セットからの単一のスカラー値の取得
+	 * $this->setFetchMode() : フェッチモードの設定
+	 * $this->insert()       : データを登録
+	 * $this->update()       : データを変更
+	 * $this->delete()       : データを削除
+	 *
+	 * $this->fetch〜 はZend_Db_Selectのドキュメントの各関数と同じ動作します
 	 */
 
 	/*
-	 * 引数の種類
-	 *   $data : データ
-	 *     array(
-	 *       [カラム名] => [値]
-	 *       ...
-	 *     )
+	 * このクラスは foreach に対応しています
+	 * 下記の動作は同じになります
 	 *
-	 *   $options : オプション
-	 *     array(
-	 *       'column' => [カラム名]
-	 *       'where'  => [条件]
-	 *       'order'  => [並び順]
-	 *       ...
-	 *     )
+	 * foreach
+	 *   foreach($this as $key => $row) {
+	 *       var_dump($row);
+	 *   }
 	 *
-	 *     [カラム名]
-	 *       表示するカラム名の配列
-	 *       array(
-	 *         [カラム名],
-	 *         [カラム名] => [表示項目名]
-	 *         ...
-	 *       )
+	 * while & fetch
+	 *   $key = 0;
+	 *   while ($row = $this->fetch()) {
+	 *       var_dump($row);
+	 *       $key++;
+	 *   }
 	 *
-	 *     [条件]
-	 *       array(
-	 *         [条件式] => [値]
-	 *         ...
-	 *       )
-	 *
-	 *     [条件式]
-	 *       'id = ?'        => 23             -> id = 23
-	 *       'name LIKE ?'   => "%北%"         -> name LIKE '%北%'
-	 *       'statuc IN (?)' => array(0,1,2)   -> status IN (0,1,2) 
-	 *       'user_id'       => "test"         -> user_id = 'test'
-	 *       'password'      => array("a","b") -> password IN ('a','b')
-	 *
-	 *     ※ 複数の条件はANDで結合します
-	 *     ※ 値が空だと条件は作られません
-	 *
-	 *     [並び順]
-	 *       並びの優先順位
-	 *       array(
-	 *         [カラム名],
-	 *         [カラム名] ASC
-	 *         ...
-	 *       )
-	 */
-
-	/*
-	 * 件数を取得
-	 *   $this->count([$where])
-	 *   @param $where : 条件 (省略可)
-	 *   @return int 件数
-	 */
-
-	/*
-	 * データを取得
-	 *   $this->find([$option])
-	 *   @param $option : オプション (省略可)
-	 *   @return Zend_Db::FETCH_ASSOC データの配列
-	 */
-
-	/*
-	 * 1件のデータを取得
-	 *   $this->findRow([$where])
-	 *   @param $where : 条件 (省略可)
-	 *   @return Zend_Db::FETCH_ROW 1件のデータ
-	 */
-
-	/*
-	 * データを登録
-	 *   $this->insert($data)
-	 *   @param $data : データ
-	 *   @return int 登録したデータのプライマルキー
-	 */
-
-	/*
-	 * データを変更
-	 *   $this->update($data, [$where])
-	 *   @param $data : データ
-	 *   @param $where : 条件 (省略可)
-	 *   @return int 変更した件数
-	 */
-
-	/*
-	 * データを削除
-	 *   $this->update([$where])
-	 *   @param $where : 条件 (省略可)
-	 *   @return int 削除した件数
+	 * fetchAll
+	 *   $list = $this->fetchAll();
+	 *   foreach($list as $key => $row) {
+	 *       var_dump($row);
+	 *   }
 	 */
 
 	/**
-	 * カスタムFIND関数
+	 * 条件による結果を取得
 	 *
-	 * @return Zend_Db_Table_Rowset データの配列
+	 * @param array $where 条件
+	 * @return Base_Db_Table 自身を返す
 	 */
-	public function customFind() {
+	public function customSelect($where = array()) {
 		// SELECT作成
-		$select = $this->table->select();
+		$select = $this->select();
+
+		// 条件
+		foreach ($where as $key => $value) {
+			// 値が空なら何もしない
+			if (empty($value)) {
+				continue;
+			}
+			// 渡されたキー名ごとにwhereの条件を変える
+			switch ($key) {
+				case 'id'   : $select->where("id = ?", $value); break;
+				case 'name' : $select->where("name LIKE ? OR kana LIKE ?", array($value, $value)); break;
+				case 'date' : $select->where("date > ?", $value); break;
+			}
+		}
+
+		// 並び順
+		$select->order("id");
+		$select->order("date ASC");
+
+		/*
+		 * コントローラー側で BASE_Db_Table::fetch() 等を使用する為に自身を返しています
+		 * 関数呼び出し時に結果セットが必要であれば $this->fetch() 等にしてください
+		 */
+		return $this;
+	}
+
+	/**
+	 * Join結果を取得
+	 *
+	 * @return Base_Db_Table 自身を返す
+	 */
+	public function customJoin() {
+		// SELECT作成
+		$select = $this->select();
 
 		// フィールド制限
 		$select->from($this->table, array('user_id', 'password', 'name', 'status'));
 
-		// 結合
+		// Join結合
 		$select->join("templete2", "templete2.id = templete.id");
 		$select->leftJoin("templete3", "templete3.id = templete.id");
 
-		// 条件
-		$select->where("id > ?", 0);
-		$select->orWhere("user_id = ?", "vagrant");
-		/*
-		 * self::_createWhere関数で配列を自動解釈することもできます
-		 * 詳細は BASE_Db_Table::_createWhere() を参照してください
-		 */
-
-		// 並び順
-		$select->order("user_id");
-		$select->order("id DESC");
-
-		// 結果を返す
-		return $this->db->fetchAll($select);
+		return $this;
 	}
 
 	/**
-	 * カスタムUNION関数
+	 * Union結果を取得
 	 *
-	 * @return Zend_Db_Table_Rowset データの配列
+	 * @param mixed $tables Unionするテーブル
+	 * @return Base_Db_Table 自身を返す
 	 */
-	public function customUnion() {
-		// Union候補1
-		$child_1 = $this->db->select();
-		{
-			// フィールド制限
-			$child_1->from("table1", array('user_id', 'password', 'name', 'status'));
+	public function customUnion($union) {
+		$this->union($union);
 
-			// 結合
-			$child_1->join("templete2", "templete2.id = templete.id");
-			$child_1->leftJoin("templete3", "templete3.id = templete.id");
-
-			// 条件
-			$child_1->where("id > ?", 0);
-			$child_1->orWhere("user_id = ?", "vagrant");
-		}
-
-		// Union候補2
-		$child_2 = $this->db->select();
-		{
-			// フィールド制限
-			$child_2->from("table2", array(
-				'user_id'  => "test_id",	// test_id AS user_id
-				'password' => "test_ps",	// test_ps AS pawword
-				'name'     => "test_nm",	// test_nm AS name
-				'status'
-			));
-
-			// 結合
-			$child_2->join("templete2", "templete2.id = templete.id");
-			$child_2->leftJoin("templete3", "templete3.id = templete.id");
-
-			// 条件
-			$child_2->where("id > ?", 0);
-			$child_2->orWhere("user_id = ?", "vagrant");
-		}
-
-		// Union集合体
-		$all = $this->db->select();
-		$all->union($child_1, $child_2);
-		// 並び順
-		$all->order("user_id");
-		$all->order("id DESC");
-
-		// 結果を返す
-		return $this->db->fetchAll($select);
-	}
-
-	/**
-	 * カスタムUPDATE関数
-	 *
-	 * @param array $data データ
-	 * @param array $where 条件
-	 * @return Zend_Db_Table_Rowset データの配列
-	 */
-	public function customUpdate($data, $where) {
-		// トランザクションの開始
-		$this->_begin();
-
-		/* insert/update/delete処理はロールバック用にTryCatchを使用する */
-		try {
-			// 登録
-			$ret = $this->table->update($data, $where);
-			/*
-			 * self::_correctionWhere関数を使用するとデータと同じ形でも条件に使えます
-			 * 詳細は BASE_Db_Table::_correctionWhere() を参照してください
-			 */
-			// コミット
-			$this->_commit();
-			// 結果を返す
-			return $ret;
-		}
-		catch(Zend_Exception $e) {
-			$this->_rollback();
-			throw $e;
-		}
+		return $this;
 	}
 }
